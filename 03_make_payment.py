@@ -70,7 +70,7 @@ def main() -> None:
     print(f"  Amount: {p['amount']['value']} {p['amount']['currency']}")
     print(f"  To: {p['counterparty_alias']['display_name']}")
     print(f"  Description: {p['description']}")
-    print(f"  Status: {p['status']}")
+    print(f"  Type: {p.get('type', 'N/A')}")
 
 
 if __name__ == "__main__":
