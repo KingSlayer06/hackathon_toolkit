@@ -59,8 +59,40 @@ class ConditionalFreezeAction(BaseModel):
     note: str = Field("", description="Short human description.")
 
 
+class TransactionLimitFreezeAction(BaseModel):
+    """Per-transaction security guardrail: if any single OUTGOING payment exceeds
+    `max_tx_eur`, immediately freeze the card labelled `card_label`.
+
+    Optional scopes narrow which transactions count:
+    - `from_account`: only fire when the payment originates from this sub-account.
+    - `merchant_match`: only fire when the merchant/description contains this substring.
+    """
+
+    kind: Literal["transaction_limit_freeze"] = "transaction_limit_freeze"
+    max_tx_eur: float = Field(
+        ...,
+        gt=0,
+        description="Single-transaction trigger threshold in EUR (>= this fires).",
+    )
+    card_label: str = Field(..., description="Card label to freeze when the rule fires.")
+    from_account: str | None = Field(
+        None,
+        description="Optional sub-account name to scope the rule to (e.g. 'Main').",
+    )
+    merchant_match: str | None = Field(
+        None,
+        description="Optional case-insensitive substring matched against merchant/description.",
+    )
+    note: str = Field("", description="Short human description.")
+
+
 Action = Annotated[
-    Union[TransferAction, RecurringSplitAction, ConditionalFreezeAction],
+    Union[
+        TransferAction,
+        RecurringSplitAction,
+        ConditionalFreezeAction,
+        TransactionLimitFreezeAction,
+    ],
     Field(discriminator="kind"),
 ]
 

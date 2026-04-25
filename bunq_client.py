@@ -157,7 +157,17 @@ class BunqClient:
         json_body = body if method in ("POST", "PUT") else None
 
         resp = requests.request(method, url, headers=headers, json=json_body, params=params)
-        resp.raise_for_status()
+        if not resp.ok:
+            # Surface bunq's actual error JSON instead of the bare HTTPError —
+            # bunq always returns {"Error": [{"error_description": "..."}]}.
+            try:
+                err = resp.json()
+            except ValueError:
+                err = resp.text
+            raise requests.HTTPError(
+                f"{resp.status_code} {resp.reason} on {method} {endpoint}: {err}",
+                response=resp,
+            )
         return resp.json().get("Response", [])
 
     def _raw_post(self, endpoint: str, body: dict, auth_token: str | None) -> list:

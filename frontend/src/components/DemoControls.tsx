@@ -60,6 +60,20 @@ export function DemoControls({ onFired }: Props) {
         >
           {busy === "bar" ? "…" : "🍷"} Fire bar payment (€35)
         </button>
+        <button
+          type="button"
+          disabled={busy !== null}
+          onClick={() =>
+            run(
+              "large",
+              () => api.fireLargeTx(500),
+              "Spent €500 ‘LARGE PURCHASE’ from Main",
+            )
+          }
+          className="btn-ghost justify-start"
+        >
+          {busy === "large" ? "…" : "🛡️"} Fire large transaction (€500)
+        </button>
       </div>
     </section>
   );

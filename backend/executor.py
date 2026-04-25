@@ -18,6 +18,7 @@ from .models import (
     ExecutionResult,
     Plan,
     RecurringSplitAction,
+    TransactionLimitFreezeAction,
     TransferAction,
 )
 
@@ -40,6 +41,8 @@ def _execute_one(index: int, action: Action) -> ExecutionResult:
             return _do_recurring(index, action)
         if isinstance(action, ConditionalFreezeAction):
             return _do_conditional(index, action)
+        if isinstance(action, TransactionLimitFreezeAction):
+            return _do_tx_limit(index, action)
         return ExecutionResult(
             action_index=index,
             kind=getattr(action, "kind", "?"),
@@ -135,6 +138,56 @@ def _do_conditional(index: int, a: ConditionalFreezeAction) -> ExecutionResult:
             "threshold_eur": a.threshold_eur,
             "card_id": card.id,
             "card_label": card.label,
+        },
+    )
+    return ExecutionResult(
+        action_index=index,
+        kind=a.kind,
+        ok=True,
+        detail=f"Armed rule #{rule_id}: {summary}",
+        rule_id=rule_id,
+    )
+
+
+def _do_tx_limit(index: int, a: TransactionLimitFreezeAction) -> ExecutionResult:
+    card = bunq_service.find_card(a.card_label)
+    if not card:
+        return _fail(index, a.kind, f"unknown card label {a.card_label!r}")
+
+    scope_account_id: int | None = None
+    scope_account_name: str | None = None
+    if a.from_account:
+        sa = bunq_service.find_sub_account(a.from_account)
+        if not sa:
+            return _fail(
+                index,
+                a.kind,
+                f"sub-account {a.from_account!r} not found — can't scope the rule",
+            )
+        scope_account_id = sa.id
+        scope_account_name = sa.description
+
+    scope_bits = []
+    if scope_account_name:
+        scope_bits.append(f"on {scope_account_name}")
+    if a.merchant_match:
+        scope_bits.append(f"matching “{a.merchant_match}”")
+    scope = (" " + " ".join(scope_bits)) if scope_bits else ""
+
+    summary = (
+        f"If any single transaction{scope} ≥ €{a.max_tx_eur:.2f}, "
+        f"freeze card {card.label!r}."
+    )
+    rule_id = db.insert_rule(
+        kind=a.kind,
+        summary=summary,
+        config={
+            "max_tx_eur": a.max_tx_eur,
+            "card_id": card.id,
+            "card_label": card.label,
+            "from_account_id": scope_account_id,
+            "from_account_name": scope_account_name,
+            "merchant_match": (a.merchant_match or "").strip() or None,
         },
     )
     return ExecutionResult(

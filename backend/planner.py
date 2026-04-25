@@ -40,7 +40,7 @@ isn't listed, refuse that transfer in `warnings` and skip it.
 - Card labels work the same way EXCEPT cards cannot be auto-created. If no card \
 matches, refuse the conditional_freeze in `warnings`.
 
-There are exactly three Action kinds you may emit:
+There are exactly four Action kinds you may emit:
 
 1. transfer
    - Move money NOW between two of the user's sub-accounts.
@@ -57,6 +57,15 @@ contains `trigger_match` (case-insensitive), automatically route \
 in the last `window_days` days exceeds `threshold_eur`, freeze the card \
 labelled `card_label`.
    - Required: merchant_match, threshold_eur, card_label. Default window_days=7.
+
+4. transaction_limit_freeze
+   - Per-transaction security guardrail: if ANY SINGLE outgoing payment is \
+greater than or equal to `max_tx_eur`, immediately freeze `card_label`. \
+Use this when the user talks about a per-payment cap or "if I ever spend more \
+than X in one go" — distinct from #3 which is about cumulative spend.
+   - Required: max_tx_eur, card_label.
+   - Optional: `from_account` (only count tx originating from this sub-account), \
+`merchant_match` (only count tx whose merchant/description contains this substring).
 
 Rules of engagement:
 - If the user mentions a sub-account or card you don't recognise, pick the \

@@ -15,6 +15,12 @@ Two kinds of rules are evaluated here:
     over the last `window_days` exceeds `threshold_eur`, freeze the card.
     (We sum over the receiving account's recent payments.)
 
+- transaction_limit_freeze:
+    Per-transaction security guardrail. If any single OUTGOING payment is
+    >= `max_tx_eur`, freeze the card. Optional scopes: `from_account_id`
+    (only count tx from that sub-account) and `merchant_match` (only count
+    tx whose merchant/description matches).
+
 We avoid loops by tagging Vox-initiated payments with a "[vox]" prefix in
 the description, then refusing to react to them.
 """
@@ -87,6 +93,7 @@ def handle_webhook(payload: dict) -> list[FiringEvent]:
         fired.extend(_handle_incoming(account_id, amount_eur, description))
     if is_outgoing:
         fired.extend(_handle_outgoing(account_id, amount_eur, description, counterparty_name))
+        fired.extend(_handle_tx_limit(account_id, amount_eur, description, counterparty_name))
 
     for ev in fired:
         _publish(ev)
@@ -189,6 +196,63 @@ def _handle_outgoing(
                 summary=(
                     f"Froze {cfg.get('card_label')!r}: spend on “{match}” reached "
                     f"€{total:.2f} (limit €{threshold:.2f})"
+                ),
+                detail=detail,
+            )
+        )
+    return fired
+
+
+def _handle_tx_limit(
+    account_id: int | None,
+    amount_eur: float,
+    description: str,
+    counterparty_name: str,
+) -> list[FiringEvent]:
+    """Per-transaction limit guardrail. Fires on any single outgoing tx
+    >= `max_tx_eur`, optionally scoped by sub-account and/or merchant."""
+    fired: list[FiringEvent] = []
+    abs_amount = abs(amount_eur)
+    haystack = f"{description} {counterparty_name}".lower()
+
+    for rule in db.list_active_rules(kind="transaction_limit_freeze"):
+        cfg = rule["config"]
+        max_tx = float(cfg.get("max_tx_eur") or 0)
+        if max_tx <= 0 or abs_amount < max_tx:
+            continue
+
+        scope_account_id = cfg.get("from_account_id")
+        if scope_account_id is not None and account_id != int(scope_account_id):
+            continue
+
+        merchant_match = (cfg.get("merchant_match") or "").lower().strip()
+        if merchant_match and merchant_match not in haystack:
+            continue
+
+        card_id = int(cfg["card_id"])
+        ok = bunq_service.freeze_card(card_id)
+        detail = {
+            "tx_amount_eur": abs_amount,
+            "max_tx_eur": max_tx,
+            "card_id": card_id,
+            "card_label": cfg.get("card_label"),
+            "from_account_id": scope_account_id,
+            "from_account_name": cfg.get("from_account_name"),
+            "merchant_match": merchant_match or None,
+            "trigger_payment_description": description,
+            "trigger_counterparty": counterparty_name,
+            "bunq_freeze_ok": ok,
+        }
+        db.record_firing(rule["id"], detail)
+        # One-shot — disarm so we don't re-fire on every subsequent purchase.
+        db.deactivate_rule(rule["id"])
+        fired.append(
+            FiringEvent(
+                rule_id=rule["id"],
+                rule_kind=rule["kind"],
+                summary=(
+                    f"Froze {cfg.get('card_label')!r}: €{abs_amount:.2f} "
+                    f"transaction exceeded €{max_tx:.2f} limit"
                 ),
                 detail=detail,
             )

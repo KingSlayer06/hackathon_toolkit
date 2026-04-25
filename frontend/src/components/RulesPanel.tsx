@@ -36,7 +36,7 @@ export function RulesPanel({ rules, onDelete }: Props) {
               <div className="mb-1 flex items-center gap-2">
                 <span className="chip">
                   <Pulse />
-                  {r.kind === "recurring_split" ? "recurring" : "guardrail"}
+                  {ruleKindLabel(r.kind)}
                 </span>
                 {r.fired_count > 0 && (
                   <span className="chip text-accent">
@@ -71,6 +71,19 @@ function Pulse() {
       <span className="relative inline-flex h-2 w-2 rounded-full bg-accent" />
     </span>
   );
+}
+
+function ruleKindLabel(kind: string): string {
+  switch (kind) {
+    case "recurring_split":
+      return "recurring";
+    case "conditional_freeze":
+      return "guardrail";
+    case "transaction_limit_freeze":
+      return "tx limit";
+    default:
+      return kind;
+  }
 }
 
 function timeAgo(iso: string): string {

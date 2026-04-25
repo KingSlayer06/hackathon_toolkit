@@ -51,6 +51,11 @@ export const api = {
       method: "POST",
       body: JSON.stringify({ amount_eur }),
     }),
+  fireLargeTx: (amount_eur = 500) =>
+    j("/demo/fire-large-tx", {
+      method: "POST",
+      body: JSON.stringify({ amount_eur }),
+    }),
 };
 
 // ---------------------------------------------------------------------------

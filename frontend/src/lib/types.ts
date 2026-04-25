@@ -1,6 +1,10 @@
 // Mirrors backend/models.py — keep in sync by hand.
 
-export type ActionKind = "transfer" | "recurring_split" | "conditional_freeze";
+export type ActionKind =
+  | "transfer"
+  | "recurring_split"
+  | "conditional_freeze"
+  | "transaction_limit_freeze";
 
 export interface TransferAction {
   kind: "transfer";
@@ -27,10 +31,20 @@ export interface ConditionalFreezeAction {
   note?: string;
 }
 
+export interface TransactionLimitFreezeAction {
+  kind: "transaction_limit_freeze";
+  max_tx_eur: number;
+  card_label: string;
+  from_account?: string | null;
+  merchant_match?: string | null;
+  note?: string;
+}
+
 export type Action =
   | TransferAction
   | RecurringSplitAction
-  | ConditionalFreezeAction;
+  | ConditionalFreezeAction
+  | TransactionLimitFreezeAction;
 
 export interface Plan {
   actions: Action[];

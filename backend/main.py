@@ -19,6 +19,7 @@ Endpoints:
     POST /webhook/bunq            -> bunq notification target
     POST /demo/fire-salary        -> simulate salary deposit (kicker #1)
     POST /demo/fire-bar-spend     -> simulate bar spend (kicker #2)
+    POST /demo/fire-large-tx      -> simulate single large tx (kicker #3)
     GET  /events                  -> SSE stream of FiringEvent
 """
 
@@ -231,6 +232,38 @@ def demo_fire_bar_spend(amount_eur: float = Body(35.0, embed=True)) -> dict:
     )
     bunq_service.invalidate_account_cache()
     return {"ok": True, "account": src.description, "amount_eur": amount_eur, "payment_id": resp[0]["Id"]["id"]}
+
+
+@app.post("/demo/fire-large-tx")
+def demo_fire_large_tx(amount_eur: float = Body(500.0, embed=True)) -> dict:
+    """Simulate a single large outgoing transaction so a
+    transaction_limit_freeze rule can trip. Sends EUR out of Main → sugardaddy
+    with a 'LARGE PURCHASE' description.
+    """
+    src_name = os.getenv("VOX_MAIN_ACCOUNT", "Main")
+    src = bunq_service.find_sub_account(src_name)
+    if not src:
+        raise HTTPException(404, f"{src_name!r} sub-account not found")
+    c = bunq_service.get_client()
+    resp = c.post(
+        f"user/{c.user_id}/monetary-account/{src.id}/payment",
+        {
+            "amount": {"value": f"{amount_eur:.2f}", "currency": "EUR"},
+            "counterparty_alias": {
+                "type": "EMAIL",
+                "value": "sugardaddy@bunq.com",
+                "name": "BIG TICKET MERCHANT",
+            },
+            "description": "LARGE PURCHASE — demo",
+        },
+    )
+    bunq_service.invalidate_account_cache()
+    return {
+        "ok": True,
+        "account": src.description,
+        "amount_eur": amount_eur,
+        "payment_id": resp[0]["Id"]["id"],
+    }
 
 
 @app.post("/demo/replay-payment")

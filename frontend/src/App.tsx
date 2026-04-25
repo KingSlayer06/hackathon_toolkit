@@ -14,6 +14,7 @@ import { MicButton } from "./components/MicButton";
 import { Transcript } from "./components/Transcript";
 import { DiffCards } from "./components/DiffCards";
 import { AccountsPanel } from "./components/AccountsPanel";
+import { CardsPanel } from "./components/CardsPanel";
 import { RulesPanel } from "./components/RulesPanel";
 import { Toaster, type Toast } from "./components/Toaster";
 import { DemoControls } from "./components/DemoControls";
@@ -30,6 +31,7 @@ export default function App() {
   }, []);
 
   const accountsQ = usePolling(api.accounts, 4000);
+  const cardsQ = usePolling(api.cards, 8000);
   const rulesQ = usePolling(api.rules, 4000);
 
   // ---- planning + execution state -------------------------------------
@@ -68,9 +70,10 @@ export default function App() {
       const m = new Map(results);
       for (const res of r.results) m.set(res.action_index, res);
       setResults(m);
-      // refresh balances + rules right after
+      // refresh balances + rules + cards right after
       accountsQ.refresh();
       rulesQ.refresh();
+      cardsQ.refresh();
       pushToast({
         variant: r.results.every((x) => x.ok) ? "ok" : "bad",
         title: r.results.every((x) => x.ok)
@@ -83,7 +86,7 @@ export default function App() {
     } finally {
       setExecuting(false);
     }
-  }, [plan, selected, results, accountsQ, rulesQ]);
+  }, [plan, selected, results, accountsQ, rulesQ, cardsQ]);
 
   const reset = useCallback(() => {
     setPlan(null);
@@ -130,8 +133,9 @@ export default function App() {
       if (acct) flashAccount(acct.id);
       accountsQ.refresh();
       rulesQ.refresh();
+      cardsQ.refresh();
     },
-    [pushToast, accountsQ, rulesQ, flashAccount],
+    [pushToast, accountsQ, rulesQ, cardsQ, flashAccount],
   );
   const sseConnected = useFiringStream(onFiring);
 
@@ -162,6 +166,7 @@ export default function App() {
         {/* Left rail */}
         <div className="flex flex-col gap-4">
           <AccountsPanel accounts={accountsQ.data} highlight={hotAccounts} />
+          <CardsPanel cards={cardsQ.data} />
           <DemoControls
             onFired={(label) =>
               pushToast({ variant: "info", title: "Demo trigger", detail: label })
@@ -365,6 +370,10 @@ function Hint() {
         <li className="rounded-lg border border-line bg-panel2 p-2 text-ink">
           “Freeze my entertainment card if I spend more than 50 at bars this
           week.”
+        </li>
+        <li className="rounded-lg border border-line bg-panel2 p-2 text-ink">
+          “If anyone ever charges my main card more than 300 in one go,
+          freeze it.”
         </li>
       </ul>
       <p className="mt-3">

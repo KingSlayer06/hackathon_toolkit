@@ -5,6 +5,7 @@ import type {
   ExecutionResult,
   RecurringSplitAction,
   SubAccount,
+  TransactionLimitFreezeAction,
   TransferAction,
 } from "../lib/types";
 
@@ -125,6 +126,9 @@ function DiffCard({
       )}
       {action.kind === "conditional_freeze" && (
         <ConditionalBody action={action} />
+      )}
+      {action.kind === "transaction_limit_freeze" && (
+        <TxLimitBody action={action} />
       )}
 
       {result && (
@@ -316,6 +320,44 @@ function CardPreview({ label }: { label: string }) {
 }
 
 // ---------------------------------------------------------------------------
+// Kind 4: Transaction-limit freeze — single-tx security guardrail.
+// ---------------------------------------------------------------------------
+
+function TxLimitBody({ action }: { action: TransactionLimitFreezeAction }) {
+  const scopes: string[] = [];
+  if (action.from_account) scopes.push(`from ${action.from_account}`);
+  if (action.merchant_match) scopes.push(`matching “${action.merchant_match}”`);
+
+  return (
+    <div className="grid grid-cols-[1fr_auto] items-center gap-3">
+      <div className="panel-tight p-3">
+        <div className="text-xs text-muted">
+          if any single transaction{scopes.length ? " " + scopes.join(" · ") : ""} ≥
+        </div>
+        <div className="mt-1 flex items-baseline gap-2">
+          <span className="text-lg font-semibold text-warn">
+            €{fmt(action.max_tx_eur)}
+          </span>
+          <span className="text-xs text-muted">freeze immediately</span>
+        </div>
+        <div className="mt-2 flex items-center gap-1 text-[10px] uppercase tracking-wider text-muted">
+          <ShieldIcon /> security guardrail · one-shot
+        </div>
+      </div>
+      <CardPreview label={action.card_label} />
+    </div>
+  );
+}
+
+function ShieldIcon() {
+  return (
+    <svg viewBox="0 0 24 24" width={11} height={11} fill="none" stroke="currentColor" strokeWidth={2}>
+      <path d="M12 3l8 3v6c0 5-3.5 8.5-8 9-4.5-.5-8-4-8-9V6l8-3z" strokeLinejoin="round" />
+    </svg>
+  );
+}
+
+// ---------------------------------------------------------------------------
 // Helpers
 // ---------------------------------------------------------------------------
 
@@ -342,6 +384,8 @@ function labelFor(kind: Action["kind"]): string {
       return "recurring rule";
     case "conditional_freeze":
       return "guardrail";
+    case "transaction_limit_freeze":
+      return "tx limit";
   }
 }
 
@@ -358,6 +402,16 @@ function KindIcon({ kind }: { kind: Action["kind"] }) {
       <svg viewBox="0 0 24 24" className={cls} fill="none" stroke="currentColor" strokeWidth={2}>
         <path d="M21 12a9 9 0 1 1-3-6.7L21 8" strokeLinecap="round" strokeLinejoin="round" />
         <path d="M21 3v5h-5" strokeLinecap="round" strokeLinejoin="round" />
+      </svg>
+    );
+  if (kind === "transaction_limit_freeze")
+    return (
+      <svg viewBox="0 0 24 24" className={cls} fill="none" stroke="currentColor" strokeWidth={2}>
+        <path
+          d="M12 3l8 3v6c0 5-3.5 8.5-8 9-4.5-.5-8-4-8-9V6l8-3z"
+          strokeLinejoin="round"
+        />
+        <path d="M9 12l2 2 4-4" strokeLinecap="round" strokeLinejoin="round" />
       </svg>
     );
   return (
