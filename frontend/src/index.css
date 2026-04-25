@@ -1,0 +1,78 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  color-scheme: dark;
+}
+
+html,
+body,
+#root {
+  height: 100%;
+}
+
+body {
+  font-feature-settings:
+    "ss01" on,
+    "cv11" on;
+  background:
+    radial-gradient(1200px 600px at 50% -10%, rgba(34, 211, 168, 0.08), transparent 60%),
+    radial-gradient(800px 400px at 100% 100%, rgba(34, 211, 168, 0.05), transparent 60%),
+    #0a0a0b;
+  background-attachment: fixed;
+}
+
+/* Subtle scrollbar */
+::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: #27272a;
+  border-radius: 999px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #3f3f46;
+}
+
+@layer components {
+  .panel {
+    @apply rounded-2xl border border-line bg-panel/80 backdrop-blur-sm;
+  }
+  .panel-tight {
+    @apply rounded-xl border border-line bg-panel2;
+  }
+  .btn {
+    @apply inline-flex items-center justify-center gap-2 rounded-xl px-4 py-2 text-sm font-medium transition active:scale-[0.98];
+  }
+  .btn-primary {
+    @apply btn bg-accent text-black hover:brightness-110;
+  }
+  .btn-ghost {
+    @apply btn border border-line text-ink hover:bg-panel2;
+  }
+  .btn-bad {
+    @apply btn border border-bad/40 text-bad hover:bg-bad/10;
+  }
+  .chip {
+    @apply inline-flex items-center gap-1 rounded-full border border-line bg-panel2 px-2.5 py-0.5 text-xs text-muted;
+  }
+}
+
+.shimmer-text {
+  background: linear-gradient(
+    90deg,
+    rgba(244, 244, 245, 0.5) 0%,
+    rgba(244, 244, 245, 1) 50%,
+    rgba(244, 244, 245, 0.5) 100%
+  );
+  background-size: 200% 100%;
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  animation: shimmer 2.4s linear infinite;
+}
