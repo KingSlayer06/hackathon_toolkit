@@ -1,7 +1,0 @@
-TEAM_ID=
-
-PRODUCT_NAME=VoxBunq_Hackathon_70
-PRODUCT_BUNDLE_IDENTIFIER=com.kingslayer06.vox_bunq_hackathon_70.VoxBunq_Hackathon_70$(TEAM_ID)
-
-CURRENT_PROJECT_VERSION=1
-MARKETING_VERSION=1.0
