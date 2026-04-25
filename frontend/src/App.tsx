@@ -328,22 +328,8 @@ function Header({
 
 function Logo() {
   return (
-    <div className="grid h-10 w-10 place-items-center rounded-xl border border-accent/40 bg-accent/10">
-      <svg viewBox="0 0 24 24" width={22} height={22} fill="none">
-        <path
-          d="M5 8c2 0 2-3 5-3s3 5 5 5 1-3 4-3"
-          stroke="#22d3a8"
-          strokeWidth={2}
-          strokeLinecap="round"
-        />
-        <path
-          d="M5 13c2 0 2-3 5-3s3 5 5 5 1-3 4-3"
-          stroke="#22d3a8"
-          strokeWidth={2}
-          strokeLinecap="round"
-          opacity={0.5}
-        />
-      </svg>
+    <div className="grid h-10 w-10 place-items-center rounded-2xl bg-accent text-accentInk">
+      <span className="text-2xl font-extrabold leading-none -mt-0.5">b</span>
     </div>
   );
 }
@@ -351,10 +337,10 @@ function Logo() {
 function Hero() {
   return (
     <div className="text-center">
-      <h1 className="text-3xl font-bold tracking-tight md:text-4xl">
-        Tell your money what to do.
+      <h1 className="text-4xl font-bold tracking-tight md:text-5xl">
+        Tell your money <span className="display-italic">what to do.</span>
       </h1>
-      <p className="mt-2 max-w-xl text-sm text-muted">
+      <p className="mx-auto mt-3 max-w-xl text-sm text-muted">
         Hold the mic, speak in plain English. Vox plans the bunq sub-account
         moves, recurring splits, and guardrails — you approve the diff before a
         single euro shifts.

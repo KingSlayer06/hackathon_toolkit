@@ -40,7 +40,7 @@ export function AccountsPanel({ accounts, highlight }: Props) {
                   opacity: 1,
                   x: 0,
                   boxShadow: hot
-                    ? "0 0 0 2px rgba(34,211,168,0.6)"
+                    ? "0 0 0 2px rgba(141,239,194,0.7)"
                     : "0 0 0 0 rgba(0,0,0,0)",
                 }}
                 exit={{ opacity: 0 }}
@@ -77,8 +77,8 @@ function Balance({ value }: { value: number }) {
   return (
     <motion.span
       key={value}
-      initial={{ scale: 1.1, color: "#22d3a8" }}
-      animate={{ scale: 1, color: "#f4f4f5" }}
+      initial={{ scale: 1.1, color: "#8defc2" }}
+      animate={{ scale: 1, color: "#ffffff" }}
       transition={{ duration: 0.6 }}
       className="font-mono text-sm font-semibold tabular-nums"
     >

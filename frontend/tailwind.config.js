@@ -4,15 +4,19 @@ export default {
   theme: {
     extend: {
       colors: {
-        bg: "#0a0a0b",
-        panel: "#121214",
-        panel2: "#17171a",
-        line: "#27272a",
-        ink: "#f4f4f5",
-        muted: "#a1a1aa",
-        accent: "#22d3a8", // bunq-ish green
-        warn: "#f59e0b",
-        bad: "#f43f5e",
+        // bunq-aligned palette
+        bg: "#000000",        // true black canvas
+        panel: "#0e0e10",     // raised surface
+        panel2: "#17171a",    // sunken / row
+        line: "#26262a",      // hairlines
+        ink: "#ffffff",       // primary text
+        muted: "#9ca3af",     // secondary text
+        // "Easy Green" — bunq's signature mint
+        accent: "#8defc2",
+        accent2: "#7ce6bb",   // hover / pressed
+        accentInk: "#003a23", // text on green
+        warn: "#fbbf24",
+        bad: "#fb7185",
       },
       fontFamily: {
         sans: [
@@ -23,7 +27,18 @@ export default {
           "Segoe UI",
           "sans-serif",
         ],
+        // For the bunq-style italic accent in headlines
+        display: [
+          "DM Serif Display",
+          "Iowan Old Style",
+          "Apple Garamond",
+          "Georgia",
+          "serif",
+        ],
         mono: ["ui-monospace", "SFMono-Regular", "Menlo", "monospace"],
+      },
+      borderRadius: {
+        "4xl": "2rem",
       },
       keyframes: {
         pulseRing: {

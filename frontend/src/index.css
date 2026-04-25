@@ -16,14 +16,15 @@ body {
   font-feature-settings:
     "ss01" on,
     "cv11" on;
+  /* Bunq-style: deep black with a soft mint glow up top */
   background:
-    radial-gradient(1200px 600px at 50% -10%, rgba(34, 211, 168, 0.08), transparent 60%),
-    radial-gradient(800px 400px at 100% 100%, rgba(34, 211, 168, 0.05), transparent 60%),
-    #0a0a0b;
+    radial-gradient(900px 500px at 50% -10%, rgba(141, 239, 194, 0.12), transparent 60%),
+    radial-gradient(700px 400px at 100% 110%, rgba(141, 239, 194, 0.06), transparent 60%),
+    #000000;
   background-attachment: fixed;
+  letter-spacing: -0.005em;
 }
 
-/* Subtle scrollbar */
 ::-webkit-scrollbar {
   width: 10px;
   height: 10px;
@@ -32,7 +33,7 @@ body {
   background: transparent;
 }
 ::-webkit-scrollbar-thumb {
-  background: #27272a;
+  background: #26262a;
   border-radius: 999px;
 }
 ::-webkit-scrollbar-thumb:hover {
@@ -40,17 +41,20 @@ body {
 }
 
 @layer components {
+  /* Surfaces — bunq uses generous radii */
   .panel {
-    @apply rounded-2xl border border-line bg-panel/80 backdrop-blur-sm;
+    @apply rounded-3xl border border-line bg-panel/80 backdrop-blur-sm;
   }
   .panel-tight {
-    @apply rounded-xl border border-line bg-panel2;
+    @apply rounded-2xl border border-line bg-panel2;
   }
+
+  /* Buttons — bunq's are pill-shaped */
   .btn {
-    @apply inline-flex items-center justify-center gap-2 rounded-xl px-4 py-2 text-sm font-medium transition active:scale-[0.98];
+    @apply inline-flex items-center justify-center gap-2 rounded-full px-5 py-2.5 text-sm font-semibold transition active:scale-[0.98];
   }
   .btn-primary {
-    @apply btn bg-accent text-black hover:brightness-110;
+    @apply btn bg-accent text-accentInk hover:bg-accent2;
   }
   .btn-ghost {
     @apply btn border border-line text-ink hover:bg-panel2;
@@ -58,17 +62,24 @@ body {
   .btn-bad {
     @apply btn border border-bad/40 text-bad hover:bg-bad/10;
   }
+
   .chip {
     @apply inline-flex items-center gap-1 rounded-full border border-line bg-panel2 px-2.5 py-0.5 text-xs text-muted;
+  }
+
+  /* Italic serif accent for the bunq "different kind of bank" feel */
+  .display-italic {
+    @apply font-display italic font-normal text-accent;
+    letter-spacing: -0.01em;
   }
 }
 
 .shimmer-text {
   background: linear-gradient(
     90deg,
-    rgba(244, 244, 245, 0.5) 0%,
-    rgba(244, 244, 245, 1) 50%,
-    rgba(244, 244, 245, 0.5) 100%
+    rgba(255, 255, 255, 0.5) 0%,
+    rgba(255, 255, 255, 1) 50%,
+    rgba(255, 255, 255, 0.5) 100%
   );
   background-size: 200% 100%;
   -webkit-background-clip: text;

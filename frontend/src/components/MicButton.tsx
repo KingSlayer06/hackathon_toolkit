@@ -60,10 +60,10 @@ export function MicButton({
         }}
         className={[
           "relative grid h-32 w-32 place-items-center rounded-full transition",
-          "border border-line bg-panel shadow-[0_8px_40px_-8px_rgba(34,211,168,0.3)]",
+          "border border-line bg-panel shadow-[0_8px_40px_-8px_rgba(141,239,194,0.45)]",
           "disabled:opacity-40 disabled:cursor-not-allowed",
           listening
-            ? "ring-4 ring-accent/50 bg-accent text-black"
+            ? "ring-4 ring-accent/60 bg-accent text-accentInk"
             : "hover:bg-panel2",
         ].join(" ")}
         aria-label={listening ? "Recording, release to stop" : "Hold to speak"}
@@ -77,7 +77,7 @@ export function MicButton({
             />
           </>
         )}
-        <MicIcon className={listening ? "text-black" : "text-accent"} />
+        <MicIcon className={listening ? "text-accentInk" : "text-accent"} />
       </button>
 
       <motion.div
