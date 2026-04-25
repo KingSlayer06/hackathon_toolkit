@@ -54,6 +54,23 @@ pip-log.txt
 *.swp
 *.swo
 
+# Kotlin / Gradle / KMP — caches & build outputs (keep source!)
+.gradle/
+.kotlin/
+**/build/
+.cxx/
+*.iml
+local.properties
+
+# Xcode (iosApp)
+xcuserdata/
+*.xcworkspace/xcuserdata/
+DerivedData/
+*.hmap
+*.ipa
+*.dSYM.zip
+*.dSYM
+
 # macOS / Windows
 .DS_Store
 Thumbs.db

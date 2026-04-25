@@ -1,35 +1,95 @@
-This is a Kotlin Multiplatform project targeting Android, iOS.
+# Vox
 
-* [/composeApp](./composeApp/src) is for code that will be shared across your Compose Multiplatform applications.
-  It contains several subfolders:
-  - [commonMain](./composeApp/src/commonMain/kotlin) is for code that’s common for all targets.
-  - Other folders are for Kotlin code that will be compiled for only the platform indicated in the folder name.
-    For example, if you want to use Apple’s CoreCrypto for the iOS part of your Kotlin app,
-    the [iosMain](./composeApp/src/iosMain/kotlin) folder would be the right place for such calls.
-    Similarly, if you want to edit the Desktop (JVM) specific part, the [jvmMain](./composeApp/src/jvmMain/kotlin)
-    folder is the appropriate location.
+Talk to your bunq. A voice-first interface that plans bunq sub-account moves,
+recurring splits, and card guardrails — you approve the diff before a single
+euro shifts.
 
-* [/iosApp](./iosApp/iosApp) contains iOS applications. Even if you’re sharing your UI with Compose Multiplatform,
-  you need this entry point for your iOS app. This is also where you should add SwiftUI code for your project.
+## Components
 
-### Build and Run Android Application
+| Component  | Tech                                                         | Where        |
+| ---------- | ------------------------------------------------------------ | ------------ |
+| Backend    | Python · FastAPI · bunq SDK · LLM planner · SQLite           | `backend/`   |
+| Web UI     | React · Vite · TypeScript · Tailwind · framer-motion         | `frontend/`  |
+| Mobile UI  | Kotlin Multiplatform · Compose Multiplatform · Ktor          | `vox_bunq_hackathon_70/` |
+| API toolkit | Standalone bunq scripts                                      | `0X_*.py`    |
 
-To build and run the development version of the Android app, use the run configuration from the run widget
-in your IDE’s toolbar or build it directly from the terminal:
-- on macOS/Linux
-  ```shell
-  ./gradlew :composeApp:assembleDebug
-  ```
-- on Windows
-  ```shell
-  .\gradlew.bat :composeApp:assembleDebug
-  ```
+## Backend (FastAPI)
 
-### Build and Run iOS Application
+```bash
+python -m venv .venv && source .venv/bin/activate
+pip install -r requirements.txt
+cp .env.example .env  # add bunq + LLM keys
+uvicorn backend.main:app --reload --port 8080
+```
 
-To build and run the development version of the iOS app, use the run configuration from the run widget
-in your IDE’s toolbar or open the [/iosApp](./iosApp) directory in Xcode and run it from there.
+## Frontend (web)
 
----
+```bash
+cd frontend
+npm install
+npm run dev   # localhost:5173, proxies /api -> :8080
+```
 
-Learn more about [Kotlin Multiplatform](https://www.jetbrains.com/help/kotlin-multiplatform-dev/get-started.html)…
+## Mobile (Android + iOS via Compose Multiplatform)
+
+Targets the same backend as the web frontend. Browser Web Speech is replaced by
+native `android.speech.SpeechRecognizer` and `SFSpeechRecognizer`.
+
+### Prereqs
+
+- JDK 17 (set `JAVA_HOME`, e.g. `export JAVA_HOME="$(/usr/libexec/java_home -v 17)"`)
+- Android SDK with platform 35 + build-tools 34 (Android Studio handles this)
+- Xcode 15+ for iOS builds
+
+All KMP files live in `vox_bunq_hackathon_70/`. `cd vox_bunq_hackathon_70` before
+running any `./gradlew` command below.
+
+### Backend URL
+
+Defaults are platform-specific (in `vox_bunq_hackathon_70/composeApp/src/{androidMain,iosMain}/kotlin/com/kingslayer06/vox/data/Config.*.kt`):
+
+- Android emulator → `http://10.0.2.2:8080` (host machine's loopback)
+- iOS simulator → `http://localhost:8080`
+
+For real devices on your LAN, override at app start:
+
+```kotlin
+com.kingslayer06.vox.data.VoxConfig.baseUrl = "http://192.168.1.42:8080"
+```
+
+### Run Android
+
+```bash
+cd vox_bunq_hackathon_70
+./gradlew :composeApp:installDebug   # device or emulator running
+# or open vox_bunq_hackathon_70/ in Android Studio and hit Run
+```
+
+### Run iOS
+
+```bash
+open vox_bunq_hackathon_70/iosApp/iosApp.xcodeproj
+# pick a simulator/device and Run
+# (the project's "Compile Kotlin Framework" build phase calls
+#  `./gradlew :composeApp:embedAndSignAppleFrameworkForXcode` automatically)
+```
+
+First iOS build downloads the K/N toolchain (~1 GB into `~/.konan`) — be patient.
+
+### Mobile feature parity with the web frontend
+
+- Hold-to-talk mic button (native speech recognizer per platform)
+- Live transcript with edit-as-text fallback
+- Plan → diff cards (transfer / recurring split / conditional freeze / tx limit) with checkbox-selected execution
+- Sub-accounts panel with hot-flash on rule firing
+- Cards panel with frozen-state mini card art
+- Active rules with disarm
+- SSE-powered live rule firing toasts
+- Demo trigger buttons (salary / bar / large tx)
+- Status pills (bunq / llm / events)
+
+## API toolkit scripts
+
+The numbered `0X_*.py` files are standalone bunq SDK examples (auth, accounts,
+payments, cards, callbacks). They use `bunq_client.py` and live for quick
+reference / debugging — they are not required by the app.
